@@ -7,19 +7,34 @@ class ProfileSettings(models.Model):
     email_important = models.BooleanField(default=True)
 
 
+class Roles(models.Model):
+    name = models.CharField(max_length=255)
+    permission = models.IntegerField()
+
+
+class TGConnect(models.Model):
+    telegram_id = models.CharField(max_length=255, blank=True)
+    need_confirmation = models.BooleanField(default=True)
+    check_token = models.CharField(max_length=255)
+
+
+class VKConnect(models.Model):
+    vk_id = models.CharField(max_length=255, blank=True)
+    need_confirmation = models.BooleanField(default=True)
+    check_token = models.CharField(max_length=255)
+
+
 class User(AbstractUser):
-    Roles = (
-        ("owner", "Subdomain owner"),
-        ("admin", "Subdomain admin"),
-        ("user", "Subdomain user"),
-        ("not_domain_user", "User")
-    )
     subdomain = models.CharField(max_length=255, blank=True)
     username = models.CharField(max_length=255)
     profile_settings = models.ForeignKey(to=ProfileSettings, on_delete=models.CASCADE, related_name="user_settings", blank=True)
-    role = models.CharField(choices=Roles, max_length=15)
-    USERNAME_FIELD = 'username'
+    role = models.ManyToManyField(Roles)
+    need_email = models.BooleanField(default=True)
     balance = models.DecimalField(max_digits=19, decimal_places=4, default=0.0)
+    tg_account = models.ForeignKey(TGConnect, on_delete=models.CASCADE)
+    vk_account = models.ForeignKey(VKConnect, on_delete=models.CASCADE)
+
+    USERNAME_FIELD = 'username'
 
     class Meta:
         unique_together = ("subdomain", "username")

@@ -1,0 +1,34 @@
+[
+  {
+    "model": "authorization.roles",
+    "pk": 1,
+    "fields": {
+      "name": "Anonymous",
+      "permission": 0
+    }
+  },
+  {
+    "model": "authorization.roles",
+    "pk": 2,
+    "fields": {
+      "name": "User",
+      "permission": 1
+    }
+  },
+  {
+    "model": "authorization.roles",
+    "pk": 3,
+    "fields": {
+      "name": "Subdomain admin",
+      "permission": 2
+    }
+  },
+    {
+    "model": "authorization.roles",
+    "pk": 4,
+    "fields": {
+      "name": "Subdomain owner",
+      "permission": 3
+    }
+  }
+]

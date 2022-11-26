@@ -1,8 +1,11 @@
-from django.db.models import Model
-from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import ModelSerializer
+import random
+import string
 
-from apps.authorization.models import User, ProfileSettings
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import ModelSerializer, Serializer
+
+from apps.authorization.models import User, ProfileSettings, TGConnect, VKConnect
 
 
 class UserSerializer(ModelSerializer):
@@ -21,6 +24,10 @@ class UserSerializer(ModelSerializer):
                 raise ValidationError({"error": "This email already linked to other account."})
 
         validated_data["profile_settings"] = ProfileSettings.objects.create()
+        chars = string.ascii_uppercase + string.digits
+        confirm_token = ''.join(random.choice(chars) for _ in range(6))
+        validated_data["tg_account"] = TGConnect.objects.create(check_token=confirm_token)
+        validated_data["vk_account"] = VKConnect.objects.create(check_token=confirm_token)
         instance = User.objects.create_user(**validated_data)
         return instance
 
@@ -28,7 +35,7 @@ class UserSerializer(ModelSerializer):
 class ProfileSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ("username", "id", "email", "first_name", "last_name", "is_superuser")
+        fields = ("username", "id", "email", "first_name", "last_name")
 
 
 class SettingsSerializer(ModelSerializer):
@@ -36,3 +43,13 @@ class SettingsSerializer(ModelSerializer):
         model = ProfileSettings
         field = "__all__"
 
+
+class SocialSerializer(Serializer):
+    telegram_id = serializers.CharField(max_length=255, required=False)
+    vk_id = serializers.CharField(max_length=255, required=False)
+    need_confirmation = serializers.BooleanField(default=True)
+    check_token = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = VKConnect
+        field = "__all__"

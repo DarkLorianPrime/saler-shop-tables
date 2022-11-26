@@ -31,7 +31,6 @@ def authenticate(request=None, **credentials):
     If the given credentials are valid, return a User object.
     """
     for backend, backend_path in _get_backends(return_tuples=True):
-        print(backend)
         backend_signature = inspect.signature(backend.authenticate)
         try:
             backend_signature.bind(request, **credentials)

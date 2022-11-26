@@ -48,7 +48,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
-
+VK_TOKEN = os.getenv("VK_TOKEN_SEND")
+TG_TOKEN = os.getenv("TG_TOKEN")
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
