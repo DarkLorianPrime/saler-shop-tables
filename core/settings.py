@@ -1,5 +1,4 @@
 import os
-import socket
 from datetime import timedelta
 from pathlib import Path
 
@@ -14,6 +13,13 @@ DEBUG = os.getenv("DEBUG", "True").lower() == 'true'
 
 ALLOWED_HOSTS = ["*"]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'darklorian@darklorian.ru'
+EMAIL_HOST_PASSWORD = '36PRIMELor00'
+EMAIL_PORT = 465
+
 INSTALLED_APPS = [
     'rest_framework',
     'django.contrib.admin',
@@ -25,11 +31,6 @@ INSTALLED_APPS = [
     'apps.authorization'
 ]
 
-REST_FRAMEWORK = {
-  'DEFAULT_AUTHENTICATION_CLASSES': (
-    'customjwt.jwthandler.CustomJWTAuthentication',
-  ),
-}
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
@@ -44,12 +45,14 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middlewares.authentication_middleware.AuthenticationMiddleware'
 ]
 
 ROOT_URLCONF = 'core.urls'
 VK_TOKEN = os.getenv("VK_TOKEN_SEND")
 TG_TOKEN = os.getenv("TG_TOKEN")
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

@@ -1,9 +1,6 @@
 def splitter_middleware(get_response):
     """
     Deprecated
-
-    :param get_response:
-    :return:
     """
     def middleware(request):
         full_domain = request.get_host()
