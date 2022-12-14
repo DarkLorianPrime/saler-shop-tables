@@ -1,4 +1,3 @@
-from django.core.mail import send_mail
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -6,7 +5,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ViewSet
 
 from apps.authorization.models import User, EmailConfirmation
+from apps.authorization.responses import Messages
 from apps.authorization.serializers import UserSerializer, ProfileSerializer, SocialSerializer, NotificationsSerializer
+from apps.authorization.utils import send_letter
+from core import settings
 from lib.methods_handler import TgMethods, VkMethods
 
 
@@ -49,18 +51,18 @@ class ProfileViewSet(ModelViewSet):
         if instance.exists():
             instance.delete()
             return Response({"response": "ok"})
-        return Response({"response": "Code + UUID Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"response": Messages.NOT_CODE}, status=status.HTTP_404_NOT_FOUND)
 
     def send_email(self, request, *args, **kwargs):
         instance = request.user
         if instance.email_confirmation is not None:
             code = instance.email_confirmation.check_token
             uuid = instance.email_confirmation.uuid_url
-            send_mail(subject="Окончание регистрации", message=f"https://ы.страж.shop/api/v1/activate/{uuid}/{code}",
-                      from_email="Ваше лисье величество <darklorian@darklorian.ru>", recipient_list=[instance.email])
-            return Response({"response": "Check your email."})
+            send_letter("Окончание регистрации", f"{settings.DOMAIN}activate/{uuid}/{code}", [instance.email])
+            return Response({"response": Messages.CHECK_EMAIL})
 
-        return Response({"response": "You already have confirmation email."})
+        return Response({"response": Messages.ALREADY_CONFIRMATION})
 
 
 class SocialViewSet(ViewSet):
@@ -82,15 +84,14 @@ class SocialViewSet(ViewSet):
             user_instance = User.objects.filter(vk_account__check_token=text)
 
             if not user_instance.exists():
-                VkMethods().messages.send(peer_id=user, message="Token not found!\nTry again?")
+                VkMethods().messages.send(peer_id=user, message=Messages.NOT_TOKEN)
                 return HttpResponse('ok')
 
             instance = user_instance.first()
             instance.vk_account.need_confirmation = False
             instance.vk_account.vk_id = user
 
-            VkMethods().messages.send(peer_id=user,
-                                      message=f"Token found!\nConnected to user with username {instance.username}")
+            VkMethods().messages.send(peer_id=user, message=Messages.TOKEN_FOUND_USERNAME.format(instance.username))
 
         if data.get("message"):
             text = data["message"]["text"]
@@ -98,15 +99,14 @@ class SocialViewSet(ViewSet):
             user_instance = User.objects.filter(tg_account__check_token=text)
 
             if not user_instance.exists():
-                TgMethods().sendMessage(chat_id=user, text="Token not found!\nTry again?")
+                TgMethods().sendMessage(chat_id=user, text=Messages.NOT_TOKEN)
                 return HttpResponse('ok')
 
             instance = user_instance.first()
             instance.tg_account.need_confirmation = False
             instance.tg_account.telegram_id = user
 
-            TgMethods().sendMessage(chat_id=user,
-                                    text=f"Token found!\nConnected to user with username {instance.username}")
+            TgMethods().sendMessage(chat_id=user, text=Messages.TOKEN_FOUND_USERNAME.format(instance.username))
 
         return HttpResponse('ok')
 
@@ -123,7 +123,7 @@ class SettingsViewSet(ViewSet):
                 serializer = NotificationsSerializer(user.notifications_settings)
                 return Response(serializer.data)
 
-        return Response({"detail": "This section of settings does not exists."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": Messages.NOT_FOUND_SETTINGS}, status=status.HTTP_400_BAD_REQUEST)
 
     def update_settings(self, request, *args, **kwargs):
         query = request.query_params
@@ -137,7 +137,7 @@ class SettingsViewSet(ViewSet):
                 serializer.save()
                 return Response(serializer.data)
 
-        return Response({"detail": "This section of settings does not exists."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": Messages.NOT_FOUND_SETTINGS}, status=status.HTTP_400_BAD_REQUEST)
 
     def check_possibility_update(self, request, *args, **kwargs):
         query = request.query_params
@@ -146,5 +146,4 @@ class SettingsViewSet(ViewSet):
         match query.get("action", "global"):
             case "notifications":
                 perm = not (user.need_email and user.vk_account.need_confirmation and user.tg_account.need_confirmation)
-                print(perm)
                 return Response({"response": perm})

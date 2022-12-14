@@ -10,6 +10,6 @@ class Site(models.Model):
     subdomain = models.SlugField(allow_unicode=True)
     premium = models.ForeignKey("PremiumSettings", on_delete=models.CASCADE)
     description = models.TextField()
-    template_name = models.CharField(max_length=255)
+    template_name = models.CharField(max_length=255, default="default")
     public = models.BooleanField(default=True)
 

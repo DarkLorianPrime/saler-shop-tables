@@ -1,14 +1,17 @@
-from django.contrib.auth.middleware import get_user
+from django.http import HttpResponse
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
-from customjwt.authorization import CustomAuthorizationBackend, authenticate
 from customjwt.jwthandler import CustomJWTAuthentication
 
 
 class AuthenticationMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        user = CustomJWTAuthentication().authenticate(request)
+        try:
+            user = CustomJWTAuthentication().authenticate(request)
+        except AuthenticationFailed:
+            return HttpResponse("Unauthorized", status=401)
 
         if user is None:
             return

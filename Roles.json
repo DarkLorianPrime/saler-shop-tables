@@ -19,7 +19,7 @@
     "model": "authorization.roles",
     "pk": 3,
     "fields": {
-      "name": "Subdomain admin",
+      "name": "Admin",
       "permission": 2
     }
   },
@@ -27,7 +27,7 @@
     "model": "authorization.roles",
     "pk": 4,
     "fields": {
-      "name": "Subdomain owner",
+      "name": "Owner",
       "permission": 3
     }
   }

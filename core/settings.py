@@ -16,8 +16,8 @@ ALLOWED_HOSTS = ["*"]
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'darklorian@darklorian.ru'
-EMAIL_HOST_PASSWORD = '36PRIMELor00'
+EMAIL_HOST_USER = os.getenv("SMTP_EMAIL")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD")
 EMAIL_PORT = 465
 
 INSTALLED_APPS = [
@@ -28,10 +28,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.authorization'
+    'apps.authorization',
+    'apps.balance',
+    'apps.subdomains'
 ]
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'customjwt.jwthandler.CustomJWTAuthentication',
+    )
+}
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -46,17 +52,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'middlewares.authentication_middleware.AuthenticationMiddleware'
 ]
 
 ROOT_URLCONF = 'core.urls'
 VK_TOKEN = os.getenv("VK_TOKEN_SEND")
 TG_TOKEN = os.getenv("TG_TOKEN")
+DOMAIN = "https://ы.страж.shop/api/v1/"
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
