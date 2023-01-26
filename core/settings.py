@@ -1,5 +1,4 @@
 import os
-import socket
 from datetime import timedelta
 from pathlib import Path
 
@@ -14,6 +13,13 @@ DEBUG = os.getenv("DEBUG", "True").lower() == 'true'
 
 ALLOWED_HOSTS = ["*"]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = os.getenv("SMTP_EMAIL")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD")
+EMAIL_PORT = 465
+
 INSTALLED_APPS = [
     'rest_framework',
     'django.contrib.admin',
@@ -22,15 +28,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.authorization'
+    'apps.authorization',
+    'apps.balance',
+    'apps.subdomains'
 ]
 
 REST_FRAMEWORK = {
-  'DEFAULT_AUTHENTICATION_CLASSES': (
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
-  ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'customjwt.jwthandler.CustomJWTAuthentication',
+    )
 }
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -45,15 +52,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'middlewares.domain_splitter_middleware.splitter_middleware'
 ]
 
 ROOT_URLCONF = 'core.urls'
+VK_TOKEN = os.getenv("VK_TOKEN_SEND")
+TG_TOKEN = os.getenv("TG_TOKEN")
+DOMAIN = "https://ы.страж.shop/api/v1/"
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

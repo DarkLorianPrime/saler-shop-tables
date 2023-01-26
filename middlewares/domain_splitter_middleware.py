@@ -1,4 +1,7 @@
 def splitter_middleware(get_response):
+    """
+    Deprecated
+    """
     def middleware(request):
         full_domain = request.get_host()
         domain_pieces = full_domain.split(".")
